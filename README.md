@@ -109,25 +109,26 @@ $ docker-compose run angular gulp build --type dist
 
 ## Possible errors when installing locally:
 
-Error during running `npm install` - something mentioning `node-gyp` and `v8`
-install Visual Studio 2015
-run `npm install -g node-gyp --msvs_version=2015`
+* Error during running `npm install` - something mentioning `node-gyp` and `v8`
+  * install Visual Studio 2015
+  * run `npm install -g node-gyp --msvs_version=2015`
+
+* Error during running `bower install` - "Git not in the PATH"
+  * http://stackoverflow.com/a/20069763/894273
 
 
-Error during running `bower install` - "Git not in the PATH"
-http://stackoverflow.com/a/20069763/894273
 
-
-
-Error during running `gulp` - gulpinst.start.apply
-You need to have gulp 4 installed.
-# uninstall previous Gulp installation, if any
-$ npm uninstall gulp -g
-$ cd [your_project_root]
-$ npm uninstall gulp
-
-# install Gulp 4 CLI tools globally from 4.0 GitHub branch
-$ npm install gulpjs/gulp-cli#4.0 -g
-
-# install Gulp 4 into your project
-$ npm install gulpjs/gulp.git#4.0 --save-dev
+* Error during running `gulp` - gulpinst.start.apply
+  * You need to have gulp 4 installed.
+    ```
+    # uninstall previous Gulp installation, if any
+    $ npm uninstall gulp -g
+    $ cd [your_project_root]
+    $ npm uninstall gulp
+    
+    # install Gulp 4 CLI tools globally from 4.0 GitHub branch
+    $ npm install gulpjs/gulp-cli#4.0 -g
+    
+    # install Gulp 4 into your project
+    $ npm install gulpjs/gulp.git#4.0 --save-dev
+    ```
