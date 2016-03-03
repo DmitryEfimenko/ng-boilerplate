@@ -9,6 +9,8 @@ The build system is using [Gulp](http://gulpjs.com/).
 
 So in short you get:
 
+- automatic web server start
+- eficient browser synchronization 
 - automatic SASS compilation using libsass  with auto-prefixing
 - automatic DI annotation (via ng-annotate, no need for .$inject)
 - automatic typescript linting and compilation (+ concatenation and minification on dist environment)
