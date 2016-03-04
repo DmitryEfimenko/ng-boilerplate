@@ -86,7 +86,7 @@ ng-boilerplate/
   |- gulpfile.js
 ```
 
-This app organisation groups code by feature but not to the point of grouping the templates/tests/css inside it (it's really to change that in the gulpfile if you want to do that though).
+This app organisation groups code by feature but not to the point of grouping the templates/tests/css inside it (it's really easy to change that in the gulpfile if you want to do that though).
 
 Look at the home module present in the boilerplate to see how you can integrate a module in the angular app and don't forget to delete type definition for the controller in types/app/core.ts.
 There's also an exemple service and directive.
