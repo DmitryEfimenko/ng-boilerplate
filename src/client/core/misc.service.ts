@@ -1,15 +1,14 @@
 
-//module app {
-    class MiscService {
-        /* @ngInject */
-        constructor(private $rootScope: core.IRootScope) { }
+class MiscService {
+    /* @ngInject */
+    constructor(private $rootScope: core.IRootScope) { }
 
-        setTitle(title) {
-            this.$rootScope.pageTitle = title;
-        }
+    setTitle(title) {
+        this.$rootScope.pageTitle = title;
     }
+}
 
-    angular.module('app')
-        .service('miscService', MiscService)
-//}    
+angular.module('app')
+    .service('miscService', MiscService);
+
 export = MiscService;
