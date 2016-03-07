@@ -233,7 +233,7 @@ gulp.task('watch', function() {
 gulp.task('build',
     gulp.series(
         'tsconfig-files',
-        'clean',
+        //'clean', // not sure why we build, then clean, which deletes the built folder...
         gulp.parallel(sass, 'copy-assets', 'ts-compile', views, 'copy-vendor'),
         'index'
     )
