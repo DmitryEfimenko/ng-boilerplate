@@ -12,8 +12,7 @@
     "ejs": "2.3.2",
     "passport": "0.2.2",
     "passport-local": "1.0.0",
-    "multer": "1.1.0",
-    "fs": "^0.0.2"
+    "multer": "1.1.0"
   },
   "devDependencies": {
     "browser-sync": "^2.11.1",
@@ -21,6 +20,7 @@
     "chai": "^3.5.0",
     "chai-as-promised": "^5.2.0",
     "del": "^2.2.0",
+    "glob": "7.0.0",
     "gulp": "gulpjs/gulp#4.0",
     "gulp-autoprefixer": "3.1.0",
     "gulp-concat": "^2.6.0",
@@ -36,6 +36,8 @@
     "gulp-util": "^3.0.7",
     "gulp-wrap": "^0.11.0",
     "gulp-tsconfig-files": "^0.3.0",
+    "gulp-watch": "^4.3.5",
+    "event-stream": "3.3.2",
     "karma": "^0.13.21",
     "karma-chai-sinon": "^0.1.5",
     "karma-mocha": "^0.2.2",

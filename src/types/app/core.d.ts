@@ -1,8 +1,6 @@
-/// <reference path="../libs/angularjs/angular.d.ts"/>
-
 declare module core {
 
-    interface IRootScope extends ng.IScope {
+    interface IRootScope extends angular.IScope {
         pageTitle: string;
     }
 

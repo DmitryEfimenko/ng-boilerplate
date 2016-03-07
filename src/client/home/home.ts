@@ -1,18 +1,18 @@
-/// <reference path="../../types/types.ts"/>
+
+import MiscService = require('../core/misc.service')
+
 class HomeCtrl {
     /* @ngInject */
-    constructor($rootScope: core.IRootScope) {
-        $rootScope.pageTitle = 'Home';
+    constructor(miscService: MiscService) {
+        miscService.setTitle('Homes');
     }
 }
 
-function homeDirective(): ng.IDirective {
+function homeDirective(): angular.IDirective {
+    console.log('asd')
     return {
         restrict: 'E',
-        template: `
-<h2>Home Component</h2>
-<say-hello></say-hello>
-        `,
+        templateUrl: 'home/home.html',
         controllerAs: '$ctrl',
         bindToController: true,
         controller: HomeCtrl
@@ -22,3 +22,5 @@ function homeDirective(): ng.IDirective {
 angular
     .module('app.home')
     .directive('home', homeDirective);
+
+export = HomeCtrl;

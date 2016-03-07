@@ -1,4 +1,5 @@
-/// <reference path="../../types/types.ts"/>
+/// <reference path="../../types/types.ts" />
+
 class SayHelloCtrl {
     greeting: string;
     times: number;
@@ -27,3 +28,5 @@ function sayHelloDirective(): ng.IDirective {
 angular
     .module('app.home')
     .directive('sayHello', sayHelloDirective);
+
+export = SayHelloCtrl;

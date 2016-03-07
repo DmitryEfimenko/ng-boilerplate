@@ -2,16 +2,19 @@
   "compilerOptions": {
     "target": "es5",
     "module": "umd",
-    "sourceMap": true
+    "sourceMap": true,
+    "noExternalResolve": false
   },
   "files": [
-    "src\\client\\app.config.ts",
-    "src\\client\\app.module.ts",
+    "src\\client\\_module.ts",
     "src\\client\\core\\exceptions.decorator.ts",
-    "src\\client\\home\\home.module.ts",
+    "src\\client\\core\\misc.service.ts",
+    "src\\client\\home\\_module.ts",
     "src\\client\\home\\home.service.ts",
     "src\\client\\home\\home.ts",
     "src\\client\\home\\sayHello.ts",
+    "src\\client\\ngAmd\\ngAmdProvider.ts",
+    "src\\client\\require-config.ts",
     "src\\server\\app.ts",
     "src\\server\\passport.ts",
     "src\\server\\routeHandler.ts",

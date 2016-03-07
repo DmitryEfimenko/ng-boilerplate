@@ -1,8 +1,9 @@
-/// <reference path="../../types/types.ts"/>
+/// <reference path="../../types/types.ts" />
+
 
 angular
-  .module('app')
-  .config(exceptionDecorator);
+    .module('app')
+    .config(exceptionDecorator);
 
 /* @ngInject */
 function exceptionDecorator($provide: ng.auto.IProvideService) {

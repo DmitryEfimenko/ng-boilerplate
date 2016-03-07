@@ -1,16 +1,29 @@
-/// <reference path="../types/types.ts"/>
+/// <reference path="../types/types.ts" />
 
-angular
-    .module('app')
+import NgAmdProvider = require('./ngAmd/ngAmdProvider');
+
+angular.module('views', []);
+
+let app = angular
+    .module('app', [
+        'ng-amd',
+        'views',
+        'app.home',
+        'ui.router'
+    ])
     .config(config);
+
 
 /* @ngInject */
 function config(
     $locationProvider: ng.ILocationProvider,
     $httpProvider: ng.IHttpProvider,
     $urlRouterProvider: angular.ui.IUrlRouterProvider,
-    $stateProvider: ng.ui.IStateProvider
+    $stateProvider: ng.ui.IStateProvider,
+    ngAmdProvider: NgAmdProvider
 ) {
+    ngAmdProvider.configure(app);
+    
     $locationProvider.html5Mode(true).hashPrefix('!');
     delete $httpProvider.defaults.headers.common['X-Requested-With'];
 
@@ -31,8 +44,10 @@ function config(
     $urlRouterProvider.otherwise('/');
 
     $stateProvider
-        .state('home', {
+        .state('home', ngAmdProvider.resolve('/client/home.js', {
             url: '/',
             template: '<home></home>'
-        });
+        }));
 }
+
+export = app;

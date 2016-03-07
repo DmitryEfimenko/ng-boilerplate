@@ -13,10 +13,9 @@ module.exports = function (config) {
             'vendor/angular/angular.js',
             'vendor/ui-router/release/angular-ui-router.js',
             'vendor/angular-mocks/angular-mocks.js',
-            'build/client/views.js',
-            'src/client/*/**/*.module.ts',
-            'src/client/app.module.ts',
-            'src/client/**/!(*.module).ts',
+            'src/client/*/**/_module.ts',
+            'src/client/_module.ts',
+            'src/client/**/!(_module).ts',
             'src/tests/unit/**/*.js'
         ],
         exclude: ['src/tests/integration/**/*.js'],

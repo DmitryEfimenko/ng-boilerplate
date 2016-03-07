@@ -1,6 +1,6 @@
-/// <reference path="../../types/types.ts"/>
+/// <reference path="../../types/types.ts" />
 
-class HomeService implements core.IHomeService {
+export class HomeService implements core.IHomeService {
     private logGreeting(greeting: string) {
         console.log('Received greeting: ' + greeting);
     }

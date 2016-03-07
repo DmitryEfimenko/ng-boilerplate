@@ -1,4 +1,4 @@
-/// <reference path="../../types/types.ts"/>
+/// <reference path="../../types/types.ts" />
 
 angular
     .module('app.home', ['ui.router'])

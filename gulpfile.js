@@ -1,10 +1,13 @@
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
 var del = require('del');
-var karmaServer = require('karma').Server;
+var KarmaServer = require('karma').Server;
 var browserSync = require('browser-sync').create();
 var nodemon = require('gulp-nodemon');
 var series = require('stream-series');
+var fs = require('fs');
+var path = require('path');
+var es = require('event-stream');
 
 
 // VARIABLES ======================================================
@@ -17,9 +20,12 @@ var globs = {
   assets: 'src/assets/**/*.*',
   // karma typescript preprocessor generates a bunch of .ktp.ts which gets picked
   // up by the watch, rinse and repeat
-  types: ['src/types/**/*.ts', '!src/**/*.ktp.*'],
+  types: ['src/types/libs/**/*.ts', 'src/types/app/**.ts', '!src/**/*.ktp.*'],
   client: ['src/client/**/*.ts', '!src/client/**/*.ktp.*'],
-  clientWithDefinitions: ['src/client/**/*.ts', 'src/types/**/*.ts', '!src/**/*.ktp.*'],
+  requirejs: ['src/client/require-config.ts'],
+  clientModules: ['src/client/*/**/_module.ts', 'src/client/_module.ts', '!src/client/**/*.ktp.*'],
+  clientFeatures: ['src/client/+(?)/**/*.ts', '!src/client/+(?)/**/_module.ts', '!src/client/**/*.ktp.*'],
+  clientWithDefinitions: ['src/client/**/*.(ts|html)', 'src/types/**/*.ts', '!src/**/*.ktp.*'],
   server: ['src/server/**/*.ts', '!src/server/**/*.ktp.*'],
   serverWithDefinitions: ['src/server/**/*.ts', 'src/types/**/*.ts', '!src/**/*.ktp.*'],
   integration: 'src/tests/integration/**/*.js',
@@ -30,7 +36,7 @@ var destinations = {
   css: outputFolder + "/style",
   client: outputFolder + "/client",
   server: outputFolder + "/server",
-  libs: outputFolder + "/vendor",
+  vendor: outputFolder + "/vendor",
   assets: outputFolder + "/assets",
   index: outputFolder + "/views"
 };
@@ -38,7 +44,9 @@ var destinations = {
 // When adding a 3rd party we want to insert in the html, add it to
 // vendoredLibs, order matters
 var vendoredLibs = [
+  'vendor/requirejs/require.js',
   'vendor/angular/angular.js',
+  'vendor/angular-mocks/angular-mocks.js',
   'vendor/ui-router/release/angular-ui-router.js',
 ];
 
@@ -59,23 +67,21 @@ vendoredLibs.forEach(function(lib) {
     // take the filename
     var splittedPath = lib.split('/');
     var filename = splittedPath[splittedPath.length -1];
-    injectLibsPaths.dev.push(destinations.libs + '/' + filename);
+    injectLibsPaths.dev.push(destinations.vendor + '/' + filename);
     // And get the minified version
     filename = filename.split('.')[0] + '.min.js';
     splittedPath[splittedPath.length - 1] = filename;
     vendoredLibsMin.push(splittedPath.join('/'));
-    injectLibsPaths.dist.push(destinations.libs + '/' + filename);
+    injectLibsPaths.dist.push(destinations.vendor + '/' + filename);
 });
 
-['dev', 'dist'].forEach(function (env) {
-    injectPaths[env] = injectLibsPaths[env].concat([
-        destinations.client + '/*/**/*.module.js',
-        destinations.client + '/app.module.js',
-        isDist ? destinations.client + '/app.js' : destinations.client + '/**/!(*.module).js',
-        destinations.client + '/views.js',
-        destinations.css + '/*.css'
-    ]);
-});
+//['dev', 'dist'].forEach(function (env) {
+//    injectPaths[env] = injectLibsPaths[env].concat([
+//        isDist ? destinations.client + '/app.js' : destinations.client + '/**/!(_module.js)',
+//        destinations.client + '/views.js',
+//        destinations.css + '/*.css'
+//    ]);
+//});
 
 // TASKS ===========================================================
 function sass(file) {
@@ -101,34 +107,106 @@ function computePaths(file) {
     }
 }
 
-function tsCompileClient(file) {
+gulp.task('requirejs', function () {
     var tsProject = $.typescript.createProject({
         removeComments: true,
-        module: 'umd'
+        module: 'amd'
     });
     
-    var paths = {
-        src: globs.clientWithDefinitions,
-        dest: destinations.client
-    };
-     
-    computePaths.call(paths, file);
-    
-    var tsResult = gulp.src(paths.src)
+    var tsResult = gulp.src(globs.requirejs)
         .pipe($.typescript(tsProject));
-    
-    return tsResult.js.pipe(isDist ? $.concat('app.js') : $.util.noop())
-        .pipe($.ngAnnotate({gulpWarnings: false}))
+        
+    return tsResult.js
         .pipe(isDist ? $.uglify() : $.util.noop())
         .pipe($.wrap({ src: './iife.txt'}))
-        .pipe(gulp.dest(paths.dest))
+        .pipe(gulp.dest(destinations.client))
         .pipe(browserSync.reload({stream: true}));
+});
+
+gulp.task('client-modules', function () {
+    var tsProject = $.typescript.createProject({
+        removeComments: true,
+        module: 'amd'
+    });
+    
+    var tsResult = gulp.src(globs.clientModules.concat(globs.types))
+        .pipe($.typescript(tsProject));
+        
+    return tsResult.js.pipe($.concat('app.js'))
+        .pipe($.ngAnnotate({gulpWarnings: false}))
+        .pipe(isDist ? $.uglify() : $.util.noop())
+        //.pipe($.wrap({ src: './iife.txt'}))
+        .pipe(gulp.dest(destinations.client))
+        .pipe(browserSync.reload({stream: true}));
+});
+
+function compileFeatureTs(folder) {
+    var tsProject = $.typescript.createProject('tsconfig.json', {
+        removeComments: true,
+        module: 'amd',
+        //noExternalResolve: true
+    });
+    
+    var tsResult = gulp.src(`src/client/${folder}/**/*.ts`)
+        .pipe($.concat(`${folder}-temp.ts`))
+        .pipe($.typescript(tsProject));
+        
+    return tsResult.js.pipe($.concat(`${folder}.js`))
+        .pipe($.ngAnnotate({ gulpWarnings: false }))
+        .pipe(isDist ? $.uglify() : $.util.noop());
+        //.pipe(gulp.dest(`${destinations.client}/${folder}`));
+}
+
+function compileFeatureHtml(folder) {
+    return gulp.src(`src/client/${folder}/**/*.html`)
+        .pipe($.minifyHtml({
+            empty: true,
+            spare: true,
+            quotes: true
+        }))
+        .pipe($.ngHtml2js({
+            declareModule: false,
+            moduleName: 'views',
+            prefix: `${folder}/`
+        }))
+        .pipe($.concat('views.js'))
+        .pipe(isDist ? $.uglify() : $.util.noop());
+        //.pipe(gulp.dest(`${destinations.client}/${folder}`))
+}
+
+function compileFeature(folder) {
+    return es.merge(compileFeatureTs(folder), compileFeatureHtml(folder))
+        .pipe($.concat(`${folder}.js`))
+        //.pipe($.wrap({ src: './iife.txt' }))
+        .pipe(gulp.dest(`${destinations.client}`));
+}
+
+function featureFileChanged(file) {
+    var folder = file.split('\\')[2];
+    return compileFeature(folder)
+        .pipe(browserSync.reload({stream: true}));
+}
+
+gulp.task('compile-features', function (cb) {
+    var folders = getDirectoriesNames(path.resolve(__dirname, 'src', 'client'));
+    for (var i = 0, l = folders.length; i < l; i++) {
+        compileFeature(folders[i]);
+    }
+    browserSync.reload({ stream: true });
+    cb();
+});
+
+function getDirectoriesNames(srcPath) {
+    return fs.readdirSync(srcPath)
+        .filter(function (file) {
+            return fs.statSync(path.join(srcPath, file)).isDirectory();
+        });
 }
 
 function tsCompileServer(file) {
     var tsProject = $.typescript.createProject({
         removeComments: true,
-        module: 'umd'
+        module: 'commonjs'
     });
      
     var path = typeof file == 'function' ? globs.serverWithDefinitions : file;
@@ -141,29 +219,12 @@ function tsCompileServer(file) {
         .pipe(browserSync.reload({stream: true}));
 }
 
-gulp.task('ts-compile', gulp.series(tsCompileClient, tsCompileServer));
-
-function views(file) {
-    var srcPath = typeof file == 'function' ? globs.views : file;
-    return gulp.src(srcPath)
-        .pipe($.minifyHtml({
-            empty: true,
-            spare: true,
-            quotes: true
-        }))
-        .pipe($.ngHtml2js({ moduleName: 'views' }))
-        .pipe($.concat('views.js'))
-        .pipe(isDist ? $.uglify() : $.util.noop())
-        .pipe(gulp.dest(destinations.client))
-        .pipe(browserSync.reload({ stream: true }));
-}
-
 gulp.task('clean', function (cb) {
     del(['dist/', 'build/']).then(path => { cb(); });
 });
 
 gulp.task('karma-watch', function(cb) {
-    new karmaServer({
+    new KarmaServer({
         configFile: __dirname + '/karma.conf.js'
     }, cb).start()
 });
@@ -192,7 +253,7 @@ gulp.task('browser-sync', function () {
 
 gulp.task('copy-vendor', function () {
   return gulp.src(isDist ? vendoredLibsMin : vendoredLibs)
-    .pipe(gulp.dest(destinations.libs));
+    .pipe(gulp.dest(destinations.vendor));
 });
 
 gulp.task('copy-assets', function () {
@@ -210,8 +271,9 @@ gulp.task('index', function () {
     };
     
     var streams = _injectPaths.map(function (p) { return gulp.src(p); });
+    
     return target
-        .pipe($.inject(series(streams), injectOpts))
+        .pipe(streams.length > 0 ? $.inject(series(streams), injectOpts) : $.util.noop())
         .pipe(gulp.dest(destinations.index));
 });
 
@@ -223,9 +285,12 @@ gulp.task('tsconfig-files', function () {
 gulp.task('watch', function() {
     //gulp.watch(globs.sass, gulp.series('sass'));
     gulp.watch(globs.sass).on('change', sass);
-    gulp.watch(globs.client, gulp.series('ts-lint')).on('change', tsCompileClient);
+    gulp.watch(globs.clientFeatures).on('change', featureFileChanged);
+    //gulp.watch(globs.client, gulp.series('ts-lint')).on('change', tsCompileClient);
+    gulp.watch(globs.requirejs, gulp.series('requirejs'));
+    gulp.watch(globs.clientModules, gulp.series('client-modules'));
     gulp.watch(globs.server).on('change', tsCompileServer);
-    gulp.watch(globs.views).on('change', views);
+    //gulp.watch(globs.views, gulp.series(views));
     gulp.watch(globs.index, gulp.series('index'));
     gulp.watch(globs.assets, gulp.series('copy-assets'));
 });
@@ -234,11 +299,11 @@ gulp.task('build',
     gulp.series(
         'tsconfig-files',
         'clean',
-        gulp.parallel(sass, 'copy-assets', 'ts-compile', views, 'copy-vendor'),
+        gulp.parallel(sass, 'copy-assets', tsCompileServer, 'requirejs', 'client-modules', 'compile-features', 'copy-vendor'),
         'index'
     )
 );
 
 gulp.task('default',
-    gulp.series('build', gulp.parallel('browser-sync', 'nodemon', 'watch', 'karma-watch'))
+    gulp.series('build', gulp.parallel('browser-sync', 'nodemon', 'watch'/*, 'karma-watch'*/))
 );
