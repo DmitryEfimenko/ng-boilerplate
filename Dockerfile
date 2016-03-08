@@ -1,5 +1,4 @@
-FROM node:0.10-slim
-
+FROM node:4.3.2-slim
 
 RUN mkdir /home/angular
 
@@ -25,3 +24,10 @@ ADD .bowerrc /home/angular/.bowerrc
 RUN bower install --config.interactive=false --allow-root
 
 ADD . /home/angular
+RUN gulp build
+
+RUN rm -r src
+
+EXPOSE 8081
+
+CMD ["node","build/server/app.js"]
