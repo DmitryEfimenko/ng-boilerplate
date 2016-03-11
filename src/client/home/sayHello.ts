@@ -1,13 +1,15 @@
-/// <reference path="../../types/types.ts" />
+import * as misc from 'client/core/misc.service';
+import HomeService from 'client/home/home.service';
+import 'client/home/home.service';
 
-class SayHelloCtrl {
+export class SayHelloCtrl {
     greeting: string;
     times: number;
 
     /* @ngInject */
     constructor(
-        private $rootScope: core.IRootScope,
-        private HomeService: core.IHomeService
+        private $rootScope: misc.IRootScope,
+        private HomeService: HomeService
     ) {
         $rootScope.pageTitle = 'Hello';
         this.times = 1;
@@ -28,5 +30,3 @@ function sayHelloDirective(): ng.IDirective {
 angular
     .module('app.home')
     .directive('sayHello', sayHelloDirective);
-
-export = SayHelloCtrl;

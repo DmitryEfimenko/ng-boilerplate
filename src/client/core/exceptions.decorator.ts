@@ -1,12 +1,5 @@
-/// <reference path="../../types/types.ts" />
-
-
-angular
-    .module('app')
-    .config(exceptionDecorator);
-
 /* @ngInject */
-function exceptionDecorator($provide: ng.auto.IProvideService) {
+export default function exceptionDecorator($provide: ng.auto.IProvideService) {
     $provide.decorator('$exceptionHandler',
         /* @ngInject */
         ($delegate, $log) => {

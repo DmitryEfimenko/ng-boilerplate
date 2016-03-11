@@ -1,9 +1,6 @@
-/// <reference path="../../types/types.ts" />
+declare var System;
 
-//import angular = require('angular')
-declare var requirejs;
-
-class NgAmdProvider implements angular.IServiceProvider {
+export class NgAmdProvider implements angular.IServiceProvider {
     static $inject = ['$controllerProvider', '$provide', '$compileProvider', '$filterProvider'];
     // TODO: possibly add a way to configure a path to Controllers folder
     // call this method on top of app.config();
@@ -55,9 +52,8 @@ class NgAmdProvider implements angular.IServiceProvider {
         var ctrlName = opts.controller ? opts.controller : getControllerName(path);
         opts.resolve.loadController = (['$q', '$rootScope', ($q, $rootScope) => {
             var defer = $q.defer();
-            var dependencies = angular.isArray(path) ? path : [path];
-            requirejs(dependencies, () => {
-                $rootScope.$apply();
+            var depts = angular.isArray(path) ? path : [path];
+            $q.all(depts.map(function(dep) { return System.import(dep); })).then(function() {
                 defer.resolve();
             });
             return defer.promise;
@@ -84,8 +80,7 @@ class NgAmdProvider implements angular.IServiceProvider {
         (<any>opts.resolve).loadDependencies = (['$q', '$rootScope', ($q, $rootScope) => {
             var defer = $q.defer();
             depts = angular.isArray(depts) ? depts : [depts];
-            requirejs(depts, () => {
-                $rootScope.$apply();
+            $q.all(depts.map(function(dep) { return System.import(dep); })).then(function() {
                 defer.resolve();
             });
             return defer.promise;
@@ -103,6 +98,4 @@ interface IAugmentedIState extends ng.ui.IState {
     containerId?: string;
 }
 
-angular.module('ng-amd', []).provider('ngAmd', NgAmdProvider);
-
-export = NgAmdProvider;
+export default angular.module('ng-amd', []).provider('ngAmd', NgAmdProvider);

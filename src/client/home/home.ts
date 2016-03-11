@@ -1,7 +1,8 @@
+import MiscService from 'client/core/misc.service';
+import 'client/core/misc.service';
+import 'client/home/sayHello';
 
-import MiscService = require('../core/misc.service')
-
-class HomeCtrl {
+export class HomeCtrl {
     /* @ngInject */
     constructor(miscService: MiscService) {
         miscService.setTitle('Homes');
@@ -9,7 +10,6 @@ class HomeCtrl {
 }
 
 function homeDirective(): angular.IDirective {
-    console.log('asd')
     return {
         restrict: 'E',
         templateUrl: 'home/home.html',
@@ -22,5 +22,3 @@ function homeDirective(): angular.IDirective {
 angular
     .module('app.home')
     .directive('home', homeDirective);
-
-export = HomeCtrl;

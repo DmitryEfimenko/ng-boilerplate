@@ -1,17 +1,11 @@
-﻿/// <reference path="../types/types.ts"/>
-
-import app = require('./server');
-//import MemoryStorageData = require('./Server/Storage/MemoryStorageData');
-//import Calls = require('./spec/pageCalls/calls');
-
+﻿import app = require('./server');
 
 var port = process.env.PORT || 8081;
 var appInstance = app.init();
 
 if (appInstance.get('env') === 'development') {
-    //MemoryStorageData.init(new Calls(), () => {
-        initServer();
-    //});
+    // any additional dev env logic
+    initServer();
 } else {
     initServer();
 }

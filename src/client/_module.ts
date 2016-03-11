@@ -1,18 +1,20 @@
-/// <reference path="../types/types.ts" />
+import 'angular';
+import 'ui.router';
+import * as ngAmd from 'client/ngAmd/ngAmdProvider';
+import appHome from 'client/home/_module';
+import exceptionsConfig from 'client/core/exceptions.decorator';
 
-import NgAmdProvider = require('./ngAmd/ngAmdProvider');
-
-angular.module('views', []);
+let appViews = angular.module('views', []);
 
 let app = angular
     .module('app', [
-        'ng-amd',
-        'views',
-        'app.home',
-        'ui.router'
+        'ui.router',
+        ngAmd.default.name,
+        appViews.name,
+        appHome.name
     ])
-    .config(config);
-
+    .config(config)
+    .config(exceptionsConfig);
 
 /* @ngInject */
 function config(
@@ -20,7 +22,7 @@ function config(
     $httpProvider: ng.IHttpProvider,
     $urlRouterProvider: angular.ui.IUrlRouterProvider,
     $stateProvider: ng.ui.IStateProvider,
-    ngAmdProvider: NgAmdProvider
+    ngAmdProvider: ngAmd.NgAmdProvider
 ) {
     ngAmdProvider.configure(app);
     
@@ -44,10 +46,8 @@ function config(
     $urlRouterProvider.otherwise('/');
 
     $stateProvider
-        .state('home', ngAmdProvider.resolve('/client/home.js', {
+        .state('home', ngAmdProvider.resolve('client/home/home', {
             url: '/',
             template: '<home></home>'
         }));
 }
-
-export = app;

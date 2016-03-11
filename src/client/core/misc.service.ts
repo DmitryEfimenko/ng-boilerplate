@@ -1,7 +1,10 @@
+export interface IRootScope extends ng.IScope {
+    pageTitle: string;
+}
 
-class MiscService {
+export default class MiscService {
     /* @ngInject */
-    constructor(private $rootScope: core.IRootScope) { }
+    constructor(private $rootScope: IRootScope) { }
 
     setTitle(title) {
         this.$rootScope.pageTitle = title;
@@ -10,5 +13,3 @@ class MiscService {
 
 angular.module('app')
     .service('miscService', MiscService);
-
-export = MiscService;

@@ -5,7 +5,7 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
-    "requirejs": "2.1.22",
+    "system.js": "0.19.23",
     "angular": "1.5.0",
     "angular-mocks": "1.5.0",
     "ui-router": "~0.2.18"

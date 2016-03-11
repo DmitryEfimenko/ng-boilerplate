@@ -14,7 +14,7 @@ So in short you get:
 - automatic SASS compilation using libsass  with auto-prefixing
 - automatic DI annotation (via ng-annotate, no need for .$inject)
 - automatic typescript linting and compilation (+ concatenation and minification on dist environment)
-- automatic preload of templates using html2js (+ minification on dist environment)
+- automatic combining of *.html templates using html2js with the corresponding *.js files (+ minification on dist environment)
 - continuous testing with karma
 - integration testing with protractor
 - exception decorator to deal with errors (in app/core/exceptions.decorator.js)
@@ -57,12 +57,21 @@ The docker part is using [docker-compose](https://docs.docker.com/compose/) so y
 
 You can just run `docker-compose up` and it will set up the environment in a container.
 
+### Testing and Debugging
+ 
+build using something like `docker build -t test`
+
+then run using `docker -p 8081:8081 test`
+
+to debug, use this `docker run -it -p 8081:8081 --entrypoint bash test`
+
 ## Structure
 
 ```bash
 ng-boilerplate/
   |- src/
   |  |- client/
+  |  |  |- _module.ts
   |  |  |- component1/
   |  |  |- |- component.ts
   |  |  |- |- component.html
@@ -86,11 +95,23 @@ ng-boilerplate/
   |- gulpfile.js
 ```
 
-This app organisation groups code by feature but not to the point of grouping the templates/tests/css inside it (it's really to change that in the gulpfile if you want to do that though).
+This app organisation groups code by feature.
 
-Look at the home module present in the boilerplate to see how you can integrate a module in the angular app and don't forget to delete type definition for the controller in types/app/core.ts.
+Look at the home module present in the boilerplate to see how you can integrate a module in the angular app and.
 There's also an exemple service and directive.
 
+There are couple conventions in place that you should follow:
+
+**Client**
+* Each feature folder should have file `_module.ts` declaring new angular module, which should be referenced in the `client/_module.ts`.
+        I decided to avoid things like `ocLazyLoad` or `angularAMD` due to introduced complexity. That's why main _module.ts has dependency on feature modules. This means that all `_module` files (not any other files from a given feature) will be loaded on initial load, but that's OK since they are small. 
+* Each `angular.module` should have this: `ngAmdProvider.configure(app);` in its configuration function.
+        This allows angular controllers, services, directive, and the rest to be registered asynchronously - when the file loads.
+* Each ui.router state options should be wrapped in `ngAmdProvider.resolve('client/home/home', {...})`. See example in `client/_module.ts`.
+        We need to load code for the component that is used in the `template` option when we navigate to a state.
+
+**Server**
+* Each api route should be placed in a separate file under `server/routes/api`. It also should be registered in `server/routeHandler` with the appropriate url path. 
 
 ## Tasks
 This uses gulp (http://gulpjs.com/) so you can call any of the tasks defined in the gulpfile.

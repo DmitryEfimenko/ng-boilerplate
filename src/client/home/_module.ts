@@ -1,13 +1,17 @@
-/// <reference path="../../types/types.ts" />
+import * as ngAmd from 'client/ngAmd/ngAmdProvider';
 
-angular
-    .module('app.home', ['ui.router'])
+var app = angular
+    .module('app.home', ['ui.router', ngAmd.default.name])
     .config(homeConfig);
 
 /* @ngInject */
-function homeConfig($stateProvider: ng.ui.IStateProvider) {
+function homeConfig(ngAmdProvider: ngAmd.NgAmdProvider, $stateProvider: ng.ui.IStateProvider) {
+    ngAmdProvider.configure(app);
+
     $stateProvider.state('about', {
         url: '/about',
         templateUrl: 'home/index.html'
     });
 }
+
+export default app;

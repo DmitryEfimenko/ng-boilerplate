@@ -1,6 +1,4 @@
-﻿/// <reference path="../types/types.ts"/>
-
-import express = require('express');
+﻿import express = require('express');
 import passportLocal = require('passport-local');
 //import account = require('./Repo/Account');
 

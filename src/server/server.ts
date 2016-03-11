@@ -1,6 +1,4 @@
-﻿/// <reference path="../types/types.ts"/>
-
-import express = require('express');
+﻿import express = require('express');
 import path = require('path');
 //var favicon = require('serve-favicon');
 //import logger = require('morgan');

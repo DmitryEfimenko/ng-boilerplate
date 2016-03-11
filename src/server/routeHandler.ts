@@ -1,5 +1,3 @@
-/// <reference path="../types/types.ts"/>
-
 import express = require('express');
 import bodyParser = require('body-parser');
 import path = require('path');
@@ -14,7 +12,7 @@ var auth = (req: express.Request, res: express.Response, next)=> {
 
 class RouteHandler {
     static initialize(router: express.Router, passport) {
-        routes.walk(path.join(__dirname, 'Routes'));
+        routes.walk(path.join(__dirname, 'routes'));
         
         //console.dir(routes);
         router.get('/', routes.layout);
