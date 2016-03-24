@@ -48,6 +48,7 @@ export function init() {
     app.use('/style', express.static(path.join(__dirname, '../style')));
     app.use('/vendor', express.static(path.join(__dirname, '../vendor')));
     app.use('/client', express.static(path.join(__dirname, '../client')));
+    app.use('/common', express.static(path.join(__dirname, '../common')));
 
     app.use(session({ secret: 'This is awesome secret', cookie: { maxAge: 30 * 60 * 1000, httpOnly: false }, resave: false, saveUninitialized: true }));
     app.use(passport.initialize());
@@ -59,7 +60,7 @@ export function init() {
     // if none of routes above matched, use layout route and let angular handle it
     app.use((req, res, next) => {
         if (req.originalUrl.indexOf('/api') == -1) {
-            res.status(404).end();
+            routeLayout.layout(req, res);
         } else {
             next();
         }

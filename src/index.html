@@ -11,21 +11,9 @@
     <!-- inject:js -->
     <!-- endinject -->
     
-    <script src="/vendor/system.js"></script>
-    <script>
-        // set our baseURL reference path
-        System.config({
-            baseURL: '/',
-            defaultJSExtensions: true,
-            map: {
-                'angular': 'vendor/angular',
-                'ui.router': 'vendor/angular-ui-router'
-            }
-        });
-    </script>
     <script>
         System.import('client/_module.js').then(function(){
-            angular.element().ready(() => {
+            angular.element().ready(function() {
                 angular.bootstrap(document, ['app']);
             });
         });

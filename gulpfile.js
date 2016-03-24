@@ -18,24 +18,25 @@ var isDist = $.util.env.type === 'dist';
 var outputFolder = isDist ? 'dist' : 'build';
 
 var globs = {
-    sass: 'src/style/**/*.scss',
+    sass: 'src/client/**/*.scss',
     views: 'src/client/**/*.html',
     assets: 'src/assets/**/*.*',
     // karma typescript preprocessor generates a bunch of .ktp.ts which gets picked
     // up by the watch, rinse and repeat
-    types: ['src/types/**/*.ts', '!src/**/*.ktp.*'],
+    clientTypes: ['src/client/types/**/*.ts', '!src/**/*.ktp.*'],
+    serverTypes: ['src/server/types/**/*.ts', '!src/**/*.ktp.*'],
     client: ['src/client/**/*.ts', '!src/client/**/*.ktp.*'],
-    clientModules: ['src/client/*/**/_module.ts', 'src/client/_module.ts', '!src/client/**/*.ktp.*'],
+    clientModules: ['src/client/+(?)/**/_module.ts', 'src/client/_module.ts', '!src/client/**/*.ktp.*'],
     clientFeatures: ['src/client/+(?)/**/*.ts', '!src/client/+(?)/**/_module.ts', '!src/client/**/*.ktp.*'],
+    clientFeaturesHtml: ['src/client/+(?)/**/*.html'],
     clientWithDefinitions: ['src/client/**/*.(ts|html)', 'src/types/**/*.ts', '!src/**/*.ktp.*'],
     server: ['src/server/**/*.ts', '!src/server/**/*.ktp.*'],
-    serverWithDefinitions: ['src/server/**/*.ts', 'src/types/**/*.ts', '!src/**/*.ktp.*'],
     integration: 'src/tests/integration/**/*.js',
     index: 'src/index.html'
 };
 
 var destinations = {
-    css: outputFolder + "/style",
+    css: outputFolder + "/client/css",
     client: outputFolder + "/client",
     server: outputFolder + "/server",
     vendor: outputFolder + "/vendor",
@@ -45,55 +46,68 @@ var destinations = {
 
 // When adding a 3rd party we want to insert in the html, add it to
 // vendoredLibs, order matters
-var vendoredLibs = [
-  'vendor/system.js/dist/system.js',
-  'vendor/angular/angular.js',
-  'vendor/angular-mocks/angular-mocks.js',
-  'vendor/ui-router/release/angular-ui-router.js',
-];
+var vendoredLibs = {
+    inject: [
+        'vendor/system.js/dist/system.js',
+        'system.config.js',
+        'vendor/angular-material/angular-material.css',
+    ],
+    justCopy: [
+        'vendor/angular-material/angular-material.js',
+        'vendor/system.js/dist/system-polyfills.js',
+    ]
+} 
 
 // Will be filled automatically
-var vendoredLibsMin = [];
+var vendoredLibsMin = {
+    inject: [],
+    justCopy: []
+};
 
 var injectLibsPaths = {
-  dev: [],
-  dist: []
+    dev: [],
+    dist: []
 };
 
 var injectPaths = {
-  dev: [],
-  dist: []
+    dev: [],
+    dist: []
 };
 
-vendoredLibs.forEach(function(lib) {
-    // take the filename
-    var splittedPath = lib.split('/');
-    var filename = splittedPath[splittedPath.length -1];
-    injectLibsPaths.dev.push(destinations.vendor + '/' + filename);
-    // And get the minified version
-    filename = filename.split('.')[0] + '.min.js';
-    splittedPath[splittedPath.length - 1] = filename;
-    vendoredLibsMin.push(splittedPath.join('/'));
-    injectLibsPaths.dist.push(destinations.vendor + '/' + filename);
+['inject', 'justCopy'].forEach(function(act) {
+    vendoredLibs[act].forEach(function(lib) {
+        // take the filename
+        var splittedPath = lib.split('/');
+        var filename = splittedPath[splittedPath.length - 1];
+        if(act == 'inject')
+            injectLibsPaths.dev.push(destinations.vendor + '/' + filename);
+        // And get the minified version
+        filename = filename.split('.')[0] + '.min.js';
+        splittedPath[splittedPath.length - 1] = filename;
+        vendoredLibsMin[act].push(splittedPath.join('/'));
+        if(act == 'inject')
+            injectLibsPaths.dist.push(destinations.vendor + '/' + filename);
+    });
 });
 
-//['dev', 'dist'].forEach(function (env) {
-//    injectPaths[env] = injectLibsPaths[env].concat([
-//        isDist ? destinations.client + '/app.js' : destinations.client + '/**/!(_module.js)',
-//        destinations.client + '/views.js',
-//        destinations.css + '/*.css'
-//    ]);
-//});
+
+
+['dev', 'dist'].forEach(function (env) {
+    injectPaths[env] = injectLibsPaths[env].concat([
+        //isDist ? destinations.client + '/_module.js' : destinations.client + '/**/!(_module.js)',
+        destinations.css + '/*.css'
+    ]);
+});
 
 // TASKS ===========================================================
-function sass(file) {
-    var path = typeof file == 'function' ? globs.sass : file;
-    return gulp.src(path)
+gulp.task('sass', function() {
+    return gulp.src(globs.sass)
         .pipe($.sass({style: 'compressed'}).on('error', $.sass.logError))
         .pipe($.autoprefixer())  // defauls to > 1%, last 2 versions, Firefox ESR, Opera 12.1
+        .pipe($.concat('app.css'))
         .pipe(gulp.dest(destinations.css))
         .pipe(browserSync.reload({stream: true}));
-}
+});
 
 gulp.task('ts-lint', function () {
   return gulp.src(globs.client)
@@ -109,7 +123,7 @@ gulp.task('bundle-modules', () => {
         rootDir: 'src'
     });
 
-    var tsResult = gulp.src(globs.types.concat('src/client/_module.ts'))
+    var tsResult = gulp.src(globs.clientTypes.concat('src/client/_module.ts'))
         .pipe($.typescript(tsProject));
 
     return tsResult.js
@@ -131,7 +145,7 @@ gulp.task('bundle-features', () => {
             module: 'system',
         });
 
-        var tsResult = gulp.src(globs.types.concat(`src/client/${folder}/**/*.ts`))
+        var tsResult = gulp.src(globs.clientTypes.concat(`src/client/${folder}/**/*.ts`))
             .pipe($.typescript(tsProject))
         
         tsResult.js
@@ -219,7 +233,7 @@ gulp.task('client-modules', function () {
         module: 'system'
     });
     
-    var tsResult = gulp.src(globs.clientModules.concat(globs.types))
+    var tsResult = gulp.src(globs.clientModules.concat(globs.clientTypes))
         .pipe($.typescript(tsProject));
     
     return tsResult.js
@@ -231,11 +245,9 @@ gulp.task('client-modules', function () {
 });
 
 gulp.task('client-features', function() {
-    var tsProject = $.typescript.createProject('tsconfig.json', {
-        module: 'system',
-    });
+    var tsProject = $.typescript.createProject('./src/client/tsconfig.json');
     
-    var tsResult = gulp.src(globs.clientFeatures.concat(globs.types))
+    var tsResult = gulp.src(globs.clientFeatures.concat(globs.clientTypes))
         .pipe(appendHtml())
         .pipe($.typescript(tsProject));
         
@@ -246,20 +258,39 @@ gulp.task('client-features', function() {
 });
 
 function tsCompileServer(file) {
-    var tsProject = $.typescript.createProject({
-        removeComments: true,
-        module: 'commonjs'
-    });
-     
-    var path = typeof file == 'function' ? globs.serverWithDefinitions : file;
+    var tsProject = $.typescript.createProject('./src/server/tsconfig.json');
+
+    var processingAll = typeof file == 'function'; 
+    var path = processingAll ? globs.server.concat(globs.serverTypes) : globs.serverTypes.concat(file);
     var tsResult = gulp.src(path)
         .pipe($.typescript(tsProject));
-        
+
+
+    var dest =  destinations.server;
+    if (!processingAll) {
+        var parts = file.split('\\');
+        parts = parts.slice(1, parts.length - 1);
+        dest = outputFolder + '\\' + parts.join('\\');
+    }
+    
     return tsResult.js.pipe(isDist ? $.concat('app.js') : $.util.noop())
         .pipe(isDist ? $.uglify() : $.util.noop())
-        .pipe(gulp.dest(destinations.server))
+        .pipe(gulp.dest(dest))
         .pipe(browserSync.reload({stream: true}));
 }
+
+gulp.task('shared-code', function() {
+    var tsProject = $.typescript.createProject('./src/common/tsconfig.json', {
+        removeComments: true
+    });
+
+    var tsResult = gulp.src('src/common/*.ts')
+        .pipe($.typescript(tsProject));
+
+    return tsResult.js
+        .pipe(isDist ? $.uglify() : $.util.noop())
+        .pipe(gulp.dest(path.join(outputFolder, '/common')));
+});
 
 gulp.task('clean', function (cb) {
     del(['dist/', 'build/']).then(path => { cb(); });
@@ -294,7 +325,7 @@ gulp.task('browser-sync', function () {
 });
 
 gulp.task('copy-vendor', function () {
-  return gulp.src(isDist ? vendoredLibsMin : vendoredLibs)
+  return gulp.src(isDist ? vendoredLibsMin.inject.concat(vendoredLibsMin.justCopy) : vendoredLibs.inject.concat(vendoredLibs.justCopy))
     .pipe(gulp.dest(destinations.vendor));
 });
 
@@ -325,10 +356,9 @@ gulp.task('tsconfig-files', function () {
 });
 
 gulp.task('watch', function() {
-    //gulp.watch(globs.sass, gulp.series('sass'));
-    gulp.watch(globs.sass).on('change', sass);
+    gulp.watch(globs.sass, gulp.series('sass'));
     gulp.watch(globs.clientModules, gulp.series('client-modules'));
-    gulp.watch(globs.clientFeatures, gulp.series('client-features'));
+    gulp.watch(globs.clientFeatures.concat(globs.clientFeaturesHtml), gulp.series('client-features'));
     //gulp.watch(globs.client, gulp.series('ts-lint')).on('change', tsCompileClient);
     gulp.watch(globs.server).on('change', tsCompileServer);
     gulp.watch(globs.index, gulp.series('index'));
@@ -338,6 +368,7 @@ gulp.task('watch', function() {
 gulp.task('build',
     gulp.series(
         'clean',
+        'shared-code',
         gulp.parallel(sass, 'copy-assets', tsCompileServer, 'client-modules', 'client-features', 'copy-vendor'),
         'index'
     )
