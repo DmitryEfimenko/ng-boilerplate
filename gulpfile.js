@@ -369,7 +369,7 @@ gulp.task('build',
     gulp.series(
         'clean',
         'shared-code',
-        gulp.parallel(sass, 'copy-assets', tsCompileServer, 'client-modules', 'client-features', 'copy-vendor'),
+        gulp.parallel('sass', 'copy-assets', tsCompileServer, 'client-modules', 'client-features', 'copy-vendor'),
         'index'
     )
 );

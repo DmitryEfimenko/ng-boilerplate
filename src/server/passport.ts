@@ -1,6 +1,6 @@
-﻿import express = require('express');
-import passportLocal = require('passport-local');
-//import account = require('./Repo/Account');
+﻿import * as express from 'express';
+import * as passportLocal from 'passport-local';
+//import account from './repo/account';
 
 class Passport {
     public static configure(passport) {

@@ -1,4 +1,4 @@
-﻿import app = require('./server');
+﻿import * as app from './server';
 
 var port = process.env.PORT || 8081;
 var appInstance = app.init();

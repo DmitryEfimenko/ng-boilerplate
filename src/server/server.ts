@@ -1,16 +1,15 @@
-﻿import express = require('express');
-import path = require('path');
+﻿import * as express from 'express';
+import * as path from 'path';
 //var favicon = require('serve-favicon');
-//import logger = require('morgan');
-//import cookieParser = require('cookie-parser');
-//import bodyParser = require('body-parser');
-import session = require('express-session');
-import passport = require('passport');
-import Passport = require('./passport');
-import routeHandler = require('./routeHandler');
-//import Db = require('./Server/Storage/Db');
-//import MemoryStorage = require('./Server/Storage/MemoryStorage');
-//import PgSqlStorage = require('./Server/Storage/PgSqlStorage');
+import logger = require('morgan');
+import cookieParser = require('cookie-parser');
+import bodyParser = require('body-parser');
+import * as session from 'express-session';
+import * as passport from 'passport';
+import Passport from './passport';
+import routeHandler from './routeHandler';
+
+
 
 export function init() {
     var routeLayout = require('./routes/layout');

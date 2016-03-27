@@ -53,9 +53,9 @@ export class NgAmdProvider implements angular.IServiceProvider {
         opts.resolve.loadController = (['$q', '$rootScope', ($q, $rootScope) => {
             var defer = $q.defer();
             var depts = angular.isArray(path) ? path : [path];
-            $q.all(depts.map(function(dep) { return System.import(dep); })).then(function() {
-                defer.resolve();
-            });
+            $q.all(depts.map(function(dep) { return System.import(dep); }))
+                .then(function() { defer.resolve(); })
+                .catch(function(ex) { console.log(ex.stack); });
             return defer.promise;
         }]);
         if (!opts.controller) opts.controller = ctrlName;
@@ -80,9 +80,9 @@ export class NgAmdProvider implements angular.IServiceProvider {
         (<any>opts.resolve).loadDependencies = (['$q', '$rootScope', ($q, $rootScope) => {
             var defer = $q.defer();
             depts = angular.isArray(depts) ? depts : [depts];
-            $q.all(depts.map(function(dep) { return System.import(dep); })).then(function() {
-                defer.resolve();
-            });
+            $q.all(depts.map(function(dep) { return System.import(dep); }))
+                .then(function() { defer.resolve(); })
+                .catch(function(ex) { console.log(ex.stack); });
             return defer.promise;
         }]);
         return opts;

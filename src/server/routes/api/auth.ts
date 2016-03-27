@@ -1,4 +1,4 @@
-﻿import express = require('express');
+﻿import * as express from 'express';
 
 export function auth(req: express.Request, res: express.Response) {
     var session = req.user;

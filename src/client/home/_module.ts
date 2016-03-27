@@ -1,4 +1,4 @@
-import * as ngAmd from 'client/ngAmd/ngAmdProvider';
+import * as ngAmd from 'client/core/ngAmdProvider';
 
 var app = angular
     .module('app.home', ['ui.router', ngAmd.default.name])

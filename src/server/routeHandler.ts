@@ -1,8 +1,9 @@
-import express = require('express');
-import bodyParser = require('body-parser');
-import path = require('path');
+import * as express from 'express';
+import * as bodyParser from 'body-parser';
+import * as path from 'path';
+import * as multer from 'multer';
+
 var routes = require('./routes');
-import multer = require('multer');
 var upload = multer();
 
 var auth = (req: express.Request, res: express.Response, next)=> {
